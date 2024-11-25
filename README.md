@@ -33,6 +33,8 @@ $ npx live-server
 
 例如：`http://localhost:8080/`
 
+如果执行失败，也可以直接通过 Chrome 浏览器访问`index.html`文件启动;
+
 ## 文档
 
 [小鱼易连 WebRTC SDK 文档](https://openapi.xylink.com/common/meeting/doc/version?platform=web)
