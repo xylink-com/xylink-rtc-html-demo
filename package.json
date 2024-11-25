@@ -11,6 +11,6 @@
   "description": "",
   "dependencies": {},
   "devDependencies": {
-    "@xylink/xy-rtc-sdk": "3.9.10"
+    "@xylink/xy-rtc-sdk": "^4.0.1"
   }
 }

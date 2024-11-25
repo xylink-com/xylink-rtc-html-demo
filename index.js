@@ -1,14 +1,12 @@
 /**
  * 如果是初始接入，请一定详细阅读文档后再集成小鱼易连WebSDK
  *
- * 当前使用XYLink Web SDK：v3.9.10
  * 产品介绍：https://openapi.xylink.com/common/meeting/doc/description?platform=web
  * 集成文档：https://openapi.xylink.com/common/meeting/doc/video_call?platform=web
  * API文档：https://openapi.xylink.com/common/meeting/api/description?platform=web
  */
 // XYRTCClient模块
 let XYClient = null;
-let XYStream = null;
 let contentTrack = null;
 // 参会者布局列表数据
 let layoutList = [];
@@ -35,7 +33,6 @@ const confNumber = '';
 
 const initSetting = () => {
   XYClient = null;
-  XYStream = null;
   layoutList = [];
   cacheLayoutList = [];
   audioList = [];
@@ -47,7 +44,6 @@ const startCall = async () => {
   try {
     initSetting();
 
-    const XYRTC = xyRTC.default;
     const response = await XYRTC.checkSupportWebRTC();
 
     if (!response.result) {
@@ -68,30 +64,26 @@ const startCall = async () => {
 
     initEvent();
 
-    const result = await XYClient.loginExternalAccount({
+    await XYClient.loginExternalAccount({
       displayName: '测试',
-      // 企业账号登录，填写第三方用户ID，如果没有请填写随机ID
-      extUserId: 'XXX',
-      extId,
+      extUserId: 'xxxxx123',
     });
 
-    const token = result.detail.access_token;
-
     await XYClient.makeCall({
-      token,
       // 输入会议号
-      confNumber: '',
+      confNumber,
       // 入会密码，如果没有则不填写
       password: '',
       // 入会名称
-      displayName: '测试88',
+      displayName: '测试11',
       muteVideo,
       muteAudio,
     });
 
-    XYStream = XYRTC.createStream();
-    await XYStream.init({});
-    XYClient.publish(XYStream, { isSharePeople: true });
+    const peopleTrack = await XYClient.createVideoAudioTrack();
+    await peopleTrack.capture();
+
+    XYClient.publish(peopleTrack);
   } catch (err) {
     console.warn('呼叫失败，请检查：', err);
     alert(err.msg);
@@ -262,9 +254,7 @@ const endCall = async () => {
     layoutList = [];
     clearInvalidLayout(cacheLayoutList);
     clearInvalidAudios();
-
-    XYStream.close();
-    XYClient.destroy();
+    await XYClient.destroy();
     console.log('离开会议成功');
   }
 };
@@ -274,6 +264,9 @@ const clearInvalidLayout = (list) => {
   list.forEach(({ id }) => {
     const layoutItemId = 'wrap-' + id;
     const layoutItemEle = document.getElementById(layoutItemId);
+
+    // 清理Video资源
+    XYClient.removeVideoRenderer(id);
     // 移除layoutItemEle元素
     layoutItemEle.remove();
   });
@@ -281,26 +274,35 @@ const clearInvalidLayout = (list) => {
 
 // 清理Audio列表数据
 const clearInvalidAudios = () => {
+  audioList.forEach((item) => {
+    const streamId = item.rest.streamId;
+    // 清理Audio资源
+    XYClient.removeAudioRender(streamId);
+  });
   document.getElementById('audios').innerHTML = '';
 };
 
 // 开始共享
 const startShareContent = async () => {
+  contentTrack = await XYClient.createContentTrack();
+
+  contentTrack.on('start-share-content', () => {
+    // 推送 ContentTrack 模块
+    XYClient.publish(contentTrack);
+  });
+
+  contentTrack.on('stop-share-content', () => {
+    // 停止分享
+    stopShareContent();
+  });
+
+  contentTrack.on('track-error', (e) => {
+    const { msg = '' } = e;
+    alert(msg);
+  });
+
   try {
-    // screenAudio: true
-    const result = await XYStream.createContentStream({ screenAudio: true });
-
-    if (result) {
-      XYStream.on('start-share-content', () => {
-        // 推送 ContentTrack 模块
-        XYClient.publish(XYStream, { isShareContent: true });
-      });
-
-      XYStream.on('stop-share-content', () => {
-        // 停止分享
-        stopShareContent();
-      });
-    }
+    const stream = await contentTrack.capture();
   } catch (error) {
     stopShareContent();
   }
@@ -308,5 +310,39 @@ const startShareContent = async () => {
 
 // 结束共享
 const stopShareContent = async () => {
-  XYClient.stopShareContent();
+  if (contentTrack) {
+    contentTrack.close();
+    contentTrack = null;
+  }
+};
+
+// 暂停共享
+const pauseShareContent = async () => {
+  if (contentTrack) {
+    try {
+      await contentTrack.pause();
+    } catch (error) {
+      console.log('暂停失败，请检查：', error);
+    }
+  }
+};
+
+// 恢复共享
+const resumeShareContent = async () => {
+  if (contentTrack) {
+    try {
+      await contentTrack.resume();
+    } catch (error) {
+      console.log('恢复失败，请检查：', error);
+    }
+  }
+};
+
+// 切换新的分享源
+const switchShareContent = async () => {
+  try {
+    const stream = await contentTrack.capture();
+  } catch (error) {
+    stopShareContent();
+  }
 };
