@@ -21,6 +21,18 @@ let muteVideo = true;
 // 关闭麦克风
 let muteAudio = true;
 
+/**
+ * 配置信息，请填写！！！
+ */
+// 网关应用ID
+const clientId = '';
+// 网关Secret
+const clientSecret = '';
+// 企业ID
+const extId = '';
+// 入会会议号
+const confNumber = '';
+
 const initSetting = () => {
   XYClient = null;
   XYStream = null;
@@ -46,9 +58,9 @@ const startCall = async () => {
     XYRTC.logger.setLogLevel('INFO');
 
     XYClient = XYRTC.createClient({
-      clientId: 'BR1e5cptJgyC1aFRtiXfmdg3',
-      clientSecret: 'I2aQ80XuXcrMTemfgwzm0zYvEyWpdqb0',
-      extId: '0142901e3d83e0a1e225ef92b8663fcaebda7242',
+      clientId,
+      clientSecret,
+      extId,
       container: {
         elementId: 'meeting',
       },
@@ -58,17 +70,21 @@ const startCall = async () => {
 
     const result = await XYClient.loginExternalAccount({
       displayName: '测试',
-      extUserId: 'xxx123123x',
-      extId: '0142901e3d83e0a1e225ef92b8663fcaebda7242',
+      // 企业账号登录，填写第三方用户ID，如果没有请填写随机ID
+      extUserId: 'XXX',
+      extId,
     });
 
     const token = result.detail.access_token;
 
     await XYClient.makeCall({
       token,
-      confNumber: '915353622534',
+      // 输入会议号
+      confNumber: '',
+      // 入会密码，如果没有则不填写
       password: '',
-      displayName: '测试11',
+      // 入会名称
+      displayName: '测试88',
       muteVideo,
       muteAudio,
     });

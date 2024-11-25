@@ -13,3 +13,5 @@ packages/*
 
 stats.html
 */stats.html
+
+yarn.lock
