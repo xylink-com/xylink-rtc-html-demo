@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XYLink Web SDK v3.9 简单示例程序</title>
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <body>
+    <div class="app">
+      <div class="header">
+        <button onclick="startCall()">加入会议</button>
+        <button onclick="endCall()">离开会议</button>
+        <button onclick="switchCamera()">开启/关闭摄像头</button>
+        <button onclick="switchMicrophone()">开启/关闭麦克风</button>
+        <button onclick="startShareContent()">开启共享</button>
+        <button onclick="stopShareContent()">结束共享</button>
+      </div>
+
+      <div class="meeting center" id="meeting">
+        <!-- 渲染所有Layout数据 -->
+        <div id="layout" class="layout"></div>
+
+        <!-- audio元素需要隐藏显示，会议中不需要显示 -->
+        <div id="audios"></div>
+      </div>
+    </div>
+  </body>
+
+  <script src="./node_modules/@xylink/xy-rtc-sdk/lib/xyrtc.umd.js"></script>
+  <script src="./index.js"></script>
+</html>
