@@ -6,7 +6,7 @@
 
 ## 准备工作
 
-1. 注意在`./index.js`中配置第三方登录所需的
+1. 注意在`./index.html`中配置第三方登录所需的
 
 - clientId
 - clientSecret
