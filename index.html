@@ -21,7 +21,7 @@
         <!-- 渲染所有Layout数据 -->
         <div id="layout" class="layout"></div>
 
-        <!-- audio元素需要隐藏显示，会议中不需要显示 -->
+        <!-- audio元素处理所有远端声音数据，需要隐藏显示，会议中不需要显示 -->
         <div id="audios"></div>
       </div>
     </div>
@@ -54,6 +54,7 @@
 
     /**
      * 配置信息，请填写！！！
+     * 详细见文档：https://openapi.xylink.com/common/meeting/api/description_2?platform=web
      */
     // 网关应用ID
     const clientId = '';
@@ -61,6 +62,7 @@
     const clientSecret = '';
     // 企业ID
     const extId = '';
+    const server = '';
     // 入会会议号
     const confNumber = '';
 
@@ -92,6 +94,7 @@
           clientId,
           clientSecret,
           extId,
+          server,
           container: {
             elementId: 'meeting',
           },
@@ -121,7 +124,7 @@
         });
 
         XYStream = XYRTC.createStream();
-        await XYStream.init({});
+        await XYStream.init();
         XYClient.publish(XYStream, { isSharePeople: true });
       } catch (err) {
         console.warn('呼叫失败，请检查：', err);
@@ -227,11 +230,11 @@
         }
       });
 
-      // 缓存上一组Layout List数据，下一次diff出离开会议的设备并清空DOM
+      // 缓存上一组Layout List数据，下一次diff出离开会议的参会者并清空DOM
       cacheLayoutList = JSON.parse(JSON.stringify(layoutList));
     };
 
-    // diff出离开会议设备
+    // diff出离开会议的参会者并清理资源
     const diffInvalidLayout = () => {
       const filterLayoutList = cacheLayoutList.filter((item) => {
         return !layoutList.some(({ id }) => id === item.id);
@@ -257,7 +260,7 @@
           newAudio.id = streamId;
           audioContainer.appendChild(newAudio);
 
-          // 每个Audio Track只需执行一次setAudioRenderer即可
+          // 每个Audio Track在会议中只需执行一次setAudioRenderer即可
           XYClient.setAudioRenderer(streamId, newAudio);
         }
       });
